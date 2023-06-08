@@ -59,7 +59,7 @@ function desert(u,method,civ)
 
     local newent_id = -1
     local newsite_id = -1
-    
+
     -- free owned rooms
     for i = #u.owned_buildings-1, 0, -1 do
         local temp_bld = df.building.find(u.owned_buildings[i].id)
@@ -174,7 +174,7 @@ function checkmigrationnow()
             if unit.flags1.merchant then table.insert(merchant_civ_ids, unit.civ_id) end
         end
     end
-    
+
     if #merchant_civ_ids == 0 then
         checkForDeserters('wild', df.global.ui.main.fortress_entity.entity_links[0].target)
     end
