@@ -1,5 +1,4 @@
 --Allow stressed dwarves to emigrate from the fortress
--- Updated for 0.47.05 by wsfsbvchr
 -- For 34.11 by IndigoFenix; update and cleanup by PeridexisErrant
 -- old version:  http://dffd.bay12games.com/file.php?id=8404
 --[====[
