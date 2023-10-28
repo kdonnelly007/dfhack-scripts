@@ -10,7 +10,10 @@ PregnancyGui.ATTRS {
 }
 
 function PregnancyGui:init()
-    self.mother = false
+    if dfhack.gui.getSelectedUnit(true).sex == df.pronoun_type.she then
+        self.mother = dfhack.gui.getSelectedUnit(true)
+    else self.mother = false
+    end
     self.father = false
     self.father_historical = false
     self.msg = {}
@@ -37,7 +40,7 @@ function PregnancyGui:init()
                 },
                 widgets.HotkeyLabel{
                     frame={l=0},
-                    label="Select Mother",
+                    label="Set mother to selected unit",
                     key='CUSTOM_SHIFT_M',
                     on_activate=self:callback('selectmother'),
                 },
@@ -53,13 +56,13 @@ function PregnancyGui:init()
                 },
                 widgets.HotkeyLabel{
                     frame={l=0},
-                    label="Select Father",
+                    label="Set father to selected unit",
                     key='CUSTOM_SHIFT_F',
                     on_activate=self:callback('selectfather'),
                 },
                 widgets.HotkeyLabel{
                     frame={l=5},
-                    label="Set Mother's spouse as the Father",
+                    label="Set mother's spouse as the father",
                     key='CUSTOM_F',
                     on_activate=self:callback('spouseFather'),
                     disabled=function() return not self.mother or self.mother.relationship_ids.Spouse == -1 end
@@ -80,7 +83,7 @@ function PregnancyGui:init()
                 widgets.ToggleHotkeyLabel{
                     frame={l=1, t=1},
                     view_id='Force',
-                    label='Force',
+                    label='Replace existing pregnancy',
                     options={{label='On', value=true, pen=COLOR_GREEN},
                     {label='Off', value=false, pen=COLOR_RED}},
                     initial_option=false
@@ -149,7 +152,7 @@ end
 function PregnancyGui:selectmother()
     local unit = dfhack.gui.getSelectedUnit(true)
     if unit then 
-        if unit.sex==0 and dfhack.units.isAdult(unit) then 
+        if unit.sex==df.pronoun_type.she and dfhack.units.isAdult(unit) then 
             self.mother = unit
             self:updateLayout()
         end
@@ -175,7 +178,7 @@ function PregnancyGui:spouseFather()
             self.father_historical = father
             self.father = false
         end
-        self:updateLayout()
+    self:updateLayout()
     end
 end
 
@@ -343,14 +346,12 @@ function PregnancyGui:CreatePregnancy()
         ))
         end
     end
-    -- self.success = false
+
     if bypass or force then
-        --TODO add GUI to select the number of months for pregnancy timer
         self.mother.pregnancy_timer=math.random(self.subviews.min_term:getOptionLabel()*33600+1, self.subviews.max_term:getOptionLabel()*33600+1)
         self.mother.pregnancy_caste=father_caste
         self.mother.pregnancy_spouse=father_id
         self.mother.pregnancy_genes=genes
-        -- self.success = true
         if not force then
             table.insert(self.msg, ('SUCCESS:%sMother:%s%sFather:%s'):format(
                 NEWLINE,
