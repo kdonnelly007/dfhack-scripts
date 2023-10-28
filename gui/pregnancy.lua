@@ -4,7 +4,7 @@ local widgets = require('gui.widgets')
 PregnancyGui = defclass(PregnancyGui, widgets.Window)
 PregnancyGui.ATTRS {
     frame_title='Pregnancy manager',
-    frame={w=50, h=45},
+    frame={w=64, h=35},
     resizable=true, -- if resizing makes sense for your dialog
     resize_min={w=50, h=20}, -- try to allow users to shrink your windows
 }
@@ -14,6 +14,18 @@ function PregnancyGui:init()
     self.father = false
     self.father_historical = false
     self.msg = {}
+
+    local term_options = {}
+    local term_index = {}
+    local months
+    for months=0,10 do
+        -- table.insert(term_options,{label=('%s months'):format(months),value=months}) --I tried this to add labels, probably doing something wrong, it broke the range widget
+        table.insert(term_options,months) --this works though
+    end
+    for k,v in ipairs(term_options) do
+        term_index[v] = k
+    end
+
     self:addviews{
         widgets.ResizingPanel{
             frame={t=0},
@@ -32,7 +44,7 @@ function PregnancyGui:init()
             },
         },
         widgets.ResizingPanel{
-            frame={t=6},
+            frame={t=5},
             frame_style=gui.FRAME_INTERIOR,
             autoarrange_subviews=true,
             subviews={
@@ -54,34 +66,69 @@ function PregnancyGui:init()
                 },
             },
         },
-        widgets.ResizingPanel{
-            frame={t=12},
+        widgets.Panel{
+            frame={t=12,h=14},
             frame_style=gui.FRAME_INTERIOR,
-            autoarrange_subviews=1,
             subviews={
                 widgets.HotkeyLabel{
-                    frame={l=0},
+                    frame={l=0, t=0},
                     key='CUSTOM_SHIFT_P',
                     label="Create pregnancy",
                     on_activate=self:callback('CreatePregnancy'),
                     enabled=function() return self.mother or self.father and self.father_historical end
                 },
-                widgets.TooltipLabel{
-                    text_to_wrap=self.msg,
-                    show_tooltip=true
-                },
-
                 widgets.ToggleHotkeyLabel{
+                    frame={l=1, t=1},
                     view_id='Force',
                     label='Force',
                     options={{label='On', value=true, pen=COLOR_GREEN},
                     {label='Off', value=false, pen=COLOR_RED}},
                     initial_option=false
                 },
+                widgets.TooltipLabel{
+                    frame={l=0, t=3},
+                    text_to_wrap='Pregnancy term range (months):',
+                    show_tooltip=true,
+                    text_pen=COLOR_WHITE
+                },
+                widgets.CycleHotkeyLabel{
+                    view_id='min_term',
+                    frame={l=0, t=6, w=SLIDER_LABEL_WIDTH},
+                    label='Min pregnancy term:',
+                    key_back='CUSTOM_SHIFT_Z',
+                    key='CUSTOM_SHIFT_X',
+                    options=term_options,
+                    initial_option=7
+                },
+                widgets.CycleHotkeyLabel{
+                    view_id='max_term',
+                    frame={l=30, t=6, w=SLIDER_LABEL_WIDTH},
+                    label='Max pregnancy term:',
+                    key_back='CUSTOM_SHIFT_Q',
+                    key='CUSTOM_SHIFT_W',
+                    options=term_options,
+                    initial_option=9
+                },
+                widgets.RangeSlider{
+                    frame={l=0, t=4},
+                    num_stops=#term_options,
+                    get_left_idx_fn=function()
+                        return term_index[self.subviews.min_term:getOptionLabel()]
+                    end,
+                    get_right_idx_fn=function()
+                        return term_index[self.subviews.max_term:getOptionLabel()]
+                    end,
+                    on_left_change=function(idx) self.subviews.min_term:setOption(idx, true) end,
+                    on_right_change=function(idx) self.subviews.max_term:setOption(idx, true) end,
+                },
+                widgets.WrappedLabel{
+                    frame={t=8},--, h=5},
+                    text_to_wrap=self.msg
+                },
             },
         },
         widgets.ResizingPanel{
-            frame={t=22},
+            frame={t=26},
             frame_style=gui.FRAME_INTERIOR,
             autoarrange_subviews=true,
             subviews={
@@ -237,12 +284,18 @@ function PregnancyGui:findSpouse(unit)
 end
 
 function PregnancyGui:CreatePregnancy()
-	local genes,father_id,father_caste,father_name
+    local genes,father_id,father_caste,father_name
     local bypass = true
     local force = self.subviews.Force:getOptionValue()
 
     local count = #self.msg
     for i=0, count do self.msg[i]=nil end --empty self.msg
+
+    if self.subviews.min_term:getOptionLabel() > self.subviews.max_term:getOptionLabel() then
+        table.insert(self.msg,('Min term has to be less then max term'))
+        self:updateLayout()
+        return
+    end
 
     if self.father then
         genes=self.father.appearance.genes:new()
@@ -293,7 +346,7 @@ function PregnancyGui:CreatePregnancy()
     -- self.success = false
     if bypass or force then
         --TODO add GUI to select the number of months for pregnancy timer
-        self.mother.pregnancy_timer=math.random(1, 13000)
+        self.mother.pregnancy_timer=math.random(self.subviews.min_term:getOptionLabel()*33600+1, self.subviews.max_term:getOptionLabel()*33600+1)
         self.mother.pregnancy_caste=father_caste
         self.mother.pregnancy_spouse=father_id
         self.mother.pregnancy_genes=genes
