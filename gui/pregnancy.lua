@@ -147,7 +147,7 @@ function PregnancyGui:init()
 end
 
 function PregnancyGui:selectmother()
-    local unit = dfhack.gui.getSelectedUnit()
+    local unit = dfhack.gui.getSelectedUnit(true)
     if unit then 
         if unit.sex==0 and dfhack.units.isAdult(unit) then 
             self.mother = unit
@@ -157,7 +157,7 @@ function PregnancyGui:selectmother()
 end
 
 function PregnancyGui:selectfather()
-    local unit = dfhack.gui.getSelectedUnit()
+    local unit = dfhack.gui.getSelectedUnit(true)
     if unit and dfhack.units.isAdult(unit) then 
         self.father = unit
         self.father_historical = false
@@ -175,7 +175,7 @@ function PregnancyGui:spouseFather()
             self.father_historical = father
             self.father = false
         end
-    self:updateLayout()
+        self:updateLayout()
     end
 end
 
@@ -196,7 +196,7 @@ function PregnancyGui:getMotherLabel()
                 NEWLINE
             )
         end
-    else return ('No mother selected - Must be a adult female')
+    else return ('No mother selected - Must be an adult female')
     end
 end
 
