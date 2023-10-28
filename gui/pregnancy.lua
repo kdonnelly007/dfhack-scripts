@@ -3,7 +3,7 @@ local widgets = require('gui.widgets')
 
 PregnancyGui = defclass(PregnancyGui, widgets.Window)
 PregnancyGui.ATTRS {
-    frame_title='My Window',
+    frame_title='Pregnancy manager',
     frame={w=50, h=45},
     resizable=true, -- if resizing makes sense for your dialog
     resize_min={w=50, h=20}, -- try to allow users to shrink your windows
@@ -14,7 +14,6 @@ function PregnancyGui:init()
     self.father = false
     self.father_historical = false
     self.msg = {}
-    -- self.success = false
     self:addviews{
         widgets.ResizingPanel{
             frame={t=0},
@@ -178,10 +177,9 @@ function PregnancyGui:getFatherLabel()
 end
 
 function PregnancyGui:findName(unit)
-    if unit.name.has_name then
-        return dfhack.TranslateName(unit.name)
-    elseif unit.name.nickname ~= "" then
-        return unit.name.nickname
+    local name = dfhack.TranslateName(unit.name)
+    if name ~= "" then
+        return name
     else return ('Unnamed %s. (Unit id:%s)'):format(
         string.upper(df.global.world.raws.creatures.all[unit.race].name[0]),
         unit.id
@@ -262,7 +260,7 @@ function PregnancyGui:CreatePregnancy()
         local og_father = df.historical_figure.find(self.mother.pregnancy_spouse)
         bypass = false
         if force and og_father then 
-            table.insert(self.msg, ('SUCCESS:%sMother:%s%sFather:%s%sPrevious pregnancy with %s aborted'):format(
+            table.insert(self.msg, ('SUCCESS:%sMother:%s%sFather:%s%sPrevious pregnancy with %s replaced'):format(
             NEWLINE,    
             self:findName(self.mother),
             NEWLINE, 
@@ -314,7 +312,7 @@ end
 
 PregnancyScreen = defclass(PregnancyScreen, gui.ZScreen)
 PregnancyScreen.ATTRS {
-    focus_path='PregnancyScreen',
+    focus_path='pregnancy',
 }
 
 function PregnancyScreen:init()
