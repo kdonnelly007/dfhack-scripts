@@ -126,7 +126,7 @@ function PregnancyGui:init()
                 },
                 widgets.WrappedLabel{
                     frame={t=8},--, h=5},
-                    text_to_wrap=self.msg
+                    text_to_wrap=function() return self.msg end
                 },
             },
         },
@@ -291,8 +291,7 @@ function PregnancyGui:CreatePregnancy()
     local bypass = true
     local force = self.subviews.Force:getOptionValue()
 
-    local count = #self.msg
-    for i=0, count do self.msg[i]=nil end --empty self.msg
+    self.msg = {}
 
     if self.subviews.min_term:getOptionLabel() > self.subviews.max_term:getOptionLabel() then
         table.insert(self.msg,('Min term has to be less then max term'))
