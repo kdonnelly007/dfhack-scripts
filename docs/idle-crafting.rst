@@ -15,6 +15,29 @@ Usage
 ::
 
     idle-crafting status
+    idle-crafting disable
+    disable idle-crafting
+
+The ``status`` command prints statistics about the status of the tool and the
+satisfaction of "craft item" needs in your fort. Both variants of the
+``disable`` command disallow idle crafting at all workshops and disable the
+tool.
+
+Examples
+--------
+
+``idle-crafting -t 10000,1000,500 status``
+    Reset all thresholds to defaults and print status information.
+
+Options
+-------
+
+``-t <number list>``, ``--thresholds <number list>``
+    Sets the threshold(s) for the "craft item" need (i.e. the negated
+    ``focus_level``) at which the tool starts to generate crafting jobs for a
+    given unit. Units meeting earlier (higher) thresholds will be
+    prioritized. Defaults to ``10000,1000,500``.
+
 
 Overlay
 -------
@@ -31,5 +54,3 @@ carving being the preferred option. This script respects linked stockpiles and
 the setting for permitted general work orders from the "Workers" tab. Thus, to
 designate a workshop for stone crafting only, simply disable the bone carving
 labor on that tab.
-
-

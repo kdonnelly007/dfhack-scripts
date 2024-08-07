@@ -123,6 +123,8 @@ local function makeBoneCraft(unit, workshop)
         return false
     end
     workshop.jobs:insert("#", job)
+    job.flags.fetching = true
+    job.items[0].flags.is_fetching = true
     return dfhack.job.addWorker(job, unit)
 end
 
@@ -160,6 +162,8 @@ local function makeRockCraft(unit, workshop)
         return false
     end
     workshop.jobs:insert("#", job)
+    job.flags.fetching = true
+    job.items[0].flags.is_fetching = true
     return dfhack.job.addWorker(job, unit)
 end
 
@@ -417,6 +421,9 @@ IdleCraftingOverlay.ATTRS {
         'dwarfmode/ViewSheets/BUILDING/Workshop/Craftsdwarfs/Tasks',
     },
     frame = { w = 55, h = 1 },
+    visible = function ()
+        return #df.global.game.main_interface.building.button == 0
+    end
 }
 
 function IdleCraftingOverlay:init()
@@ -453,7 +460,6 @@ function IdleCraftingOverlay:onRenderBody(painter)
     if not workshop then
         return
     end
-    persist_state()
     self.subviews.leisure_toggle:setOption(allowed[workshop.id] or false)
 end
 
@@ -467,15 +473,38 @@ if dfhack_flags.module then
     return
 end
 
+if dfhack_flags.enable then
+    if dfhack_flags.enable_state then
+        print('This tool is enabled by permitting idle crafting at a Craftsdarf\'s workshop')
+        return
+    else
+        allowed = {}
+        stop()
+        persist_state()
+        return
+    end
+end
+
+if df.global.gamemode ~= df.game_mode.DWARF then
+    print('this tool requires a loaded fort')
+    return
+end
+
 local fulfillment_level =
 { 'unfettered', 'level-headed', 'untroubled', 'not distracted', 'unfocused', 'distracted', 'badly distracted' }
 local fulfillment_threshold =
 { 300, 200, 100, -999, -9999, -99999, -500000 }
 
+local argparse = require('argparse')
 
-local positionals = require('argparse').processArgsGetopt({ ... }, {})
+load_state()
+local positionals = argparse.processArgsGetopt({ ... }, {
+    { 't', 'thresholds', hasArg = true, handler = function (optarg)
+        thresholds = argparse.numberList(optarg, 'thresholds')
+    end}
+})
 
-if not positionals or positionals[1] == 'status' then
+if positionals[1] == 'status' then
     ---@type integer[]
     stats = {}
     for _, unit in ipairs(dfhack.units.getCitizens(true, false)) do
@@ -492,4 +521,16 @@ if not positionals or positionals[1] == 'status' then
     for k, v in pairs(stats) do
         print(('%4d %s'):format(v, fulfillment_level[k]))
     end
+    local num_workshops = 0
+    for _, _ in pairs(allowed) do
+        num_workshops = num_workshops + 1
+    end
+    print(('Script is %s with %d workshops configured for idle crafting'):
+        format(enabled and 'enabled' or 'disabled', num_workshops))
+    print(('The thresholds for "craft item" needs are %s'):
+        format(table.concat(thresholds, '/')))
+elseif positionals[1] == 'disable' then
+        allowed = {}
+        stop()
 end
+persist_state()
