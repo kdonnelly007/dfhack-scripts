@@ -97,7 +97,6 @@ local function makeBoneCraft(unit, workshop)
     end
 
     if not bone then
-        print('no bones found')
         return false
     end
     local job = make_job()
@@ -131,14 +130,13 @@ end
 ---make rock crafts at specified workshop
 ---@param unit df.unit
 ---@param workshop df.building_workshopst
----@return false
+---@return boolean ""
 local function makeRockCraft(unit, workshop)
     local workshop_position = xyz2pos(workshop.centerx, workshop.centery, workshop.z)
 
 
     local boulder = findClosest(workshop_position, df.global.world.items.other.BOULDER)
     if not boulder then
-        print('no boulder found')
         return false
     end
     local job = make_job()
@@ -179,6 +177,10 @@ end
 ---IDs of workshops where idle crafting is permitted
 ---@type table<integer,boolean>
 allowed = allowed or {}
+
+---IDs of workshops that have encountered failures (e.g. missing materials)
+---@type table<integer,boolean>
+failing = failing or {}
 
 ---IDs of watched units in need of crafting items
 ---@type table<integer,boolean>[]
@@ -305,14 +307,19 @@ function processUnit(workshop, idx, unit_id)
         print(' assigned ' .. dfhack.df2console(name))
         watched[idx][unit_id] = nil
     else
-        print(' failed to attach ' .. name)
+        print(' failed to assign ' .. dfhack.df2console(name))
+        print('  disabling failing workshop until the next run of the main loop')
+        failing[workshop.id] = true
     end
     return true
 end
 
 local function unit_loop()
-    -- print('idle crafting: running unit loop')
     for workshop_id, _ in pairs(allowed) do
+        -- skip workshops where job creation failed (e.g. due to missing materials)
+        if failing[workshop_id] then
+            goto next_workshop
+        end
         local workshop = locateWorkshop(workshop_id)
         -- workshop may have been destroyed or assigned a master
         if not workshop or #workshop.profile.permitted_workers > 0 then
@@ -353,6 +360,9 @@ local function main_loop()
     if not enabled then
         return
     end
+    -- put failing workshops back into the loop
+    failing = {}
+
     local num_watched = {}
     local watching = false
 
@@ -468,8 +478,15 @@ OVERLAY_WIDGETS = {
 }
 
 --
+-- commandline interface
+--
 
 if dfhack_flags.module then
+    return
+end
+
+if df.global.gamemode ~= df.game_mode.DWARF then
+    print('this tool requires a loaded fort')
     return
 end
 
@@ -485,11 +502,6 @@ if dfhack_flags.enable then
     end
 end
 
-if df.global.gamemode ~= df.game_mode.DWARF then
-    print('this tool requires a loaded fort')
-    return
-end
-
 local fulfillment_level =
 { 'unfettered', 'level-headed', 'untroubled', 'not distracted', 'unfocused', 'distracted', 'badly distracted' }
 local fulfillment_threshold =
@@ -499,9 +511,12 @@ local argparse = require('argparse')
 
 load_state()
 local positionals = argparse.processArgsGetopt({ ... }, {
-    { 't', 'thresholds', hasArg = true, handler = function (optarg)
-        thresholds = argparse.numberList(optarg, 'thresholds')
-    end}
+    {
+        't', 'thresholds', hasArg = true,
+        handler = function(optarg)
+            thresholds = argparse.numberList(optarg, 'thresholds')
+        end
+    }
 })
 
 if positionals[1] == 'status' then
