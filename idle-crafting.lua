@@ -13,97 +13,16 @@ function make_job()
     return job
 end
 
----3D city metric
----@param p1 df.coord
----@param p2 df.coord
----@return number
-function distance(p1, p2)
-    return math.abs(p1.x - p2.x) + math.abs(p1.y - p2.y) + math.abs(p1.z - p2.z)
-end
-
-local function passesScreen(item)
-    return not item.flags.in_job and not item.flags.forbid
-end
-
----find closest item in an item vector
----@generic T : df.item
----@param pos df.coord
----@param item_vector T[]
----@param is_good? fun(item: T): boolean
----@return T?
-local function findClosest(pos, item_vector, is_good)
-    local closest = nil
-    local dclosest = -1
-    for _, item in ipairs(item_vector) do
-        if passesScreen(item) and (not is_good or is_good(item)) then
-            local x, y, z = dfhack.items.getPosition(item)
-            local ditem = distance(pos, xyz2pos(x, y, z))
-            if not closest or ditem < dclosest then
-                closest = item
-                dclosest = ditem
-            end
-        end
-    end
-    return closest
-end
-
----find item inside workshop or linked stockpile
----@generic T : df.item
----@param workshop df.building_workshopst
----@param is_good fun(item: T): boolean
----@return T?
-function findLinked(workshop, is_good)
-    local res = nil
-    -- look inside the workshop first
-    for _, contained_item in ipairs(workshop.contained_items) do
-        if contained_item.use_mode == 0 and passesScreen(contained_item.item) and is_good(contained_item.item) then
-            res = contained_item.item
-            -- print('attaching item from inside the workshop')
-            goto done
-        end
-    end
-    -- then look through the linked stockpiles
-    for _, stockpile in ipairs(workshop.profile.links.take_from_pile) do
-        for _, item in ipairs(dfhack.buildings.getStockpileContents(stockpile)) do
-            if passesScreen(item) and is_good(item) then
-                res = item
-                -- print('attaching item from linked stockpile')
-                goto done
-            end
-        end
-    end
-    ::done::
-    return res
-end
-
 ---make bone crafts at specified workshop
 ---@param unit df.unit
 ---@param workshop df.building_workshopst
 ---@return boolean
-local function makeBoneCraft(unit, workshop)
-    local workshop_position = xyz2pos(workshop.centerx, workshop.centery, workshop.z)
-    local function is_bone(item)
-        if df.item_corpsepiecest:is_instance(item) then
-            return item.corpse_flags.bone and not item.flags.dead_dwarf
-        else
-            return false
-        end
-    end
-    local bone = nil
-    if #workshop.profile.links.take_from_pile > 0 then
-        bone = findLinked(workshop, is_bone)
-    else
-        bone = findClosest(workshop_position, df.global.world.items.other.ANY_REFUSE, is_bone)
-    end
-
-    if not bone then
-        return false
-    end
+function makeBoneCraft(unit, workshop)
     local job = make_job()
     job.job_type = df.job_type.MakeCrafts
     job.mat_type = -1
     job.material_category.bone = true
-    job.pos = workshop_position
+    job.pos = xyz2pos(workshop.centerx, workshop.centery, workshop.z)
 
     local jitem = df.job_item:new()
     jitem.item_type = df.item_type.NONE
@@ -117,13 +36,7 @@ local function makeBoneCraft(unit, workshop)
     job.job_items.elements:insert('#', jitem)
 
     dfhack.job.addGeneralRef(job, df.general_ref_type.BUILDING_HOLDER, workshop.id)
-    if not dfhack.job.attachJobItem(job, bone, df.job_item_ref.T_role.Reagent, 0, -1) then
-        dfhack.printerr('could not attach bones')
-        return false
-    end
     workshop.jobs:insert("#", job)
-    job.flags.fetching = true
-    job.items[0].flags.is_fetching = true
     return dfhack.job.addWorker(job, unit)
 end
 
@@ -131,18 +44,11 @@ end
 ---@param unit df.unit
 ---@param workshop df.building_workshopst
 ---@return boolean ""
-local function makeRockCraft(unit, workshop)
-    local workshop_position = xyz2pos(workshop.centerx, workshop.centery, workshop.z)
-
-
-    local boulder = findClosest(workshop_position, df.global.world.items.other.BOULDER)
-    if not boulder then
-        return false
-    end
+function makeRockCraft(unit, workshop)
     local job = make_job()
     job.job_type = df.job_type.MakeCrafts
     job.mat_type = 0
-    job.pos = workshop_position
+    job.pos = xyz2pos(workshop.centerx, workshop.centery, workshop.z)
 
     local jitem = df.job_item:new()
     jitem.item_type = df.item_type.BOULDER
@@ -155,13 +61,8 @@ local function makeRockCraft(unit, workshop)
     job.job_items.elements:insert('#', jitem)
 
     dfhack.job.addGeneralRef(job, df.general_ref_type.BUILDING_HOLDER, workshop.id)
-    if not dfhack.job.attachJobItem(job, boulder, df.job_item_ref.T_role.Reagent, 0, -1) then
-        dfhack.printerr('could not attach boulder')
-        return false
-    end
     workshop.jobs:insert("#", job)
-    job.flags.fetching = true
-    job.items[0].flags.is_fetching = true
+
     return dfhack.job.addWorker(job, unit)
 end
 
@@ -175,7 +76,7 @@ function isEnabled()
 end
 
 ---IDs of workshops where idle crafting is permitted
----@type table<integer,boolean>
+---@type table<integer,integer>
 allowed = allowed or {}
 
 ---IDs of workshops that have encountered failures (e.g. missing materials)
@@ -207,7 +108,10 @@ local function load_state()
     thresholds = persisted_data.thresholds or { 10000, 1000, 500 }
 end
 
-CraftObject = df.need_type['CraftObject']
+--frequently accessed values
+local CraftObject = df.need_type['CraftObject']
+local BONE_CARVE = df.unit_labor['BONE_CARVE']
+local STONE_CRAFT = df.unit_labor['STONE_CRAFT']
 
 ---negative crafting focus penalty
 ---@param unit df.unit
@@ -277,7 +181,7 @@ end
 
 ---check if unit is ready and try to create a crafting job for it
 ---@param workshop df.building_workshopst
----@param idx integer
+---@param idx integer "index of the unit's group"
 ---@param unit_id integer
 ---@return boolean "proceed to next workshop"
 function processUnit(workshop, idx, unit_id)
@@ -295,10 +199,10 @@ function processUnit(workshop, idx, unit_id)
     end
     -- We have an available unit
     local success = false
-    if workshop.profile.blocked_labors[df.unit_labor['BONE_CARVE']] == false then
+    if workshop.profile.blocked_labors[BONE_CARVE] == false then
         success = makeBoneCraft(unit, workshop)
     end
-    if not success and workshop.profile.blocked_labors[df.unit_labor['STONE_CRAFT']] == false then
+    if not success and workshop.profile.blocked_labors[STONE_CRAFT] == false then
         success = makeRockCraft(unit, workshop)
     end
     local name = (dfhack.TranslateName(dfhack.units.getVisibleName(unit)))
@@ -306,32 +210,56 @@ function processUnit(workshop, idx, unit_id)
         -- Why is the encoding still wrong, even when using df2console?
         print(' assigned ' .. dfhack.df2console(name))
         watched[idx][unit_id] = nil
+        allowed[workshop.id] = df.global.world.frame_counter
     else
-        print(' failed to assign ' .. dfhack.df2console(name))
-        print('  disabling failing workshop until the next run of the main loop')
-        failing[workshop.id] = true
+        dfhack.printerr('idle-crafting: profile allows neither bone carving nor stonecrafting, disabling workshop')
     end
     return true
 end
 
+
+---@param workshop df.building_workshopst
+---@return boolean
+function invalidProfile(workshop)
+    local profile = workshop.profile
+    return (#profile.permitted_workers > 0) or
+        (profile.blocked_labors[BONE_CARVE] and profile.blocked_labors[STONE_CRAFT])
+end
+
+-- try to catch units that currently don't have a job and send them to satisfy
+-- their crafting needs.
 local function unit_loop()
-    for workshop_id, _ in pairs(allowed) do
-        -- skip workshops where job creation failed (e.g. due to missing materials)
+    local current_frame = df.global.world.frame_counter
+    for workshop_id, last_job_frame in pairs(allowed) do
+        -- skip workshops where jobs appear to have been cancelled (e.g. to missing materials)
         if failing[workshop_id] then
             goto next_workshop
         end
+
         local workshop = locateWorkshop(workshop_id)
-        -- workshop may have been destroyed or assigned a master
-        if not workshop or #workshop.profile.permitted_workers > 0 then
+        -- workshop may have been destroyed, assigned a master, or does not allow crafting
+        if not workshop or invalidProfile(workshop) then
+            print('workshop destroyed or has invalid profile')
             allowed[workshop_id] = nil --clearing during iteration is permitted
             goto next_workshop
         end
+
         -- only consider workshop if not currently in use
         if #workshop.jobs > 0 then
             goto next_workshop
         end
-        dfhack.print(('idle-crafting: locating crafter for %s (%d)'):format(dfhack.buildings.getName(workshop),
-            workshop_id))
+
+        -- check that we didn't schedule a job on the last iteration
+        if (last_job_frame >= 0) and (current_frame < last_job_frame + 60) then
+            print(('idle-crafting: disabling failing workshop (%d) until the next run of main loop'):
+                format(workshop_id))
+            failing[workshop_id] = true
+            goto next_workshop
+        end
+
+        dfhack.print(('idle-crafting: locating crafter for %s (%d)'):
+            format(dfhack.buildings.getName(workshop), workshop_id))
+
         -- workshop is free to use, try to find a unit
         for idx, _ in ipairs(thresholds) do
             for unit_id, _ in pairs(watched[idx]) do
@@ -362,6 +290,9 @@ local function main_loop()
     end
     -- put failing workshops back into the loop
     failing = {}
+    for workshop_id, _ in pairs(allowed) do
+        allowed[workshop_id] = -1
+    end
 
     local num_watched = {}
     local watching = false
@@ -455,7 +386,7 @@ end
 
 function IdleCraftingOverlay:onClick(new, _)
     local workshop = dfhack.gui.getSelectedBuilding(true)
-    allowed[workshop.id] = new or nil
+    allowed[workshop.id] = new and -1 or nil
     if new and not enabled then
         start(true)
     end

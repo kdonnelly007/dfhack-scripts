@@ -48,9 +48,9 @@ needs to craft objects. Workshops that have a master assigned cannot be used in
 this way.
 
 When a workshop is designated for idle crafting, this tool will create crafting
-jobs and assigns them to idle dwarfs who have a need for crafting
-objects. Currently, bone carving and stone crafting are supported, with bone
-carving being the preferred option. This script respects linked stockpiles and
-the setting for permitted general work orders from the "Workers" tab. Thus, to
-designate a workshop for stone crafting only, simply disable the bone carving
-labor on that tab.
+jobs and assign them to idle dwarfs who have a need for crafting
+objects. Currently, bone carving and stone crafting are supported, with stone
+crafting being the default option. This script respects the setting for
+permitted general work orders from the "Workers" tab. Thus, to designate a
+workshop for bone carving, disable the stone crafting labor on for their
+workshop, will keeping bone carving enabled.
