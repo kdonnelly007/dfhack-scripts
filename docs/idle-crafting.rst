@@ -2,12 +2,16 @@ idle-crafting
 =============
 
 .. dfhack-tool::
-    :summary: Allow dwarfs to automatically satisfy their need to craft objects.
+    :summary: Allow dwarves to independently craft objects when they have the need.
     :tags: fort gameplay
 
-This script allows dwarves to automatically satisfy their crafting needs. The
-script is configured through an overlay that is added to the main page of
-craftsdwarf's workshops, as described below.
+This script allows you to mark specific Craftsdwarf's Workshops for use as
+"recreational crafting" stations. Dwarves who feel the need to craft objects
+will be able to go there to independently satisfy their crafting needs without
+manual intervention from the player.
+
+There will be a toggle on the workshop info sheet ("Tasks") tab when you
+select a Craftsdwarf's Workshop in the UI. More details below.
 
 Usage
 -----
@@ -42,13 +46,13 @@ Options
 Overlay
 -------
 
-This script provides an overlay to the "Tasks" tab of craftsdwarf's workshops,
-allowing you to designate that workshop for use by idle dwarfs to satisfy their
+This script provides an overlay on the "Tasks" tab of Craftsdwarf's workshops,
+allowing you to designate that workshop for use by idle dwarves to satisfy their
 needs to craft objects. Workshops that have a master assigned cannot be used in
 this way.
 
 When a workshop is designated for idle crafting, this tool will create crafting
-jobs and assign them to idle dwarfs who have a need for crafting
+jobs and assign them to idle dwarves who have a need for crafting
 objects. Currently, bone carving and stone crafting are supported, with stone
 crafting being the default option. This script respects the setting for
 permitted general work orders from the "Workers" tab. Thus, to designate a
