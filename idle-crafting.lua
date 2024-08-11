@@ -199,11 +199,11 @@ function processUnit(workshop, idx, unit_id)
     end
     -- We have an available unit
     local success = false
-    if workshop.profile.blocked_labors[BONE_CARVE] == false then
-        success = makeBoneCraft(unit, workshop)
-    end
-    if not success and workshop.profile.blocked_labors[STONE_CRAFT] == false then
+    if workshop.profile.blocked_labors[STONE_CRAFT] == false then
         success = makeRockCraft(unit, workshop)
+    end
+    if not success and workshop.profile.blocked_labors[BONE_CARVE] == false then
+        success = makeBoneCraft(unit, workshop)
     end
     local name = (dfhack.TranslateName(dfhack.units.getVisibleName(unit)))
     if success then
@@ -363,7 +363,9 @@ IdleCraftingOverlay.ATTRS {
     },
     frame = { w = 55, h = 1 },
     visible = function ()
-        return #df.global.game.main_interface.building.button == 0
+        return
+            #df.global.game.main_interface.building.button == 0 and
+            df.global.game.main_interface.stockpile_link.adding_new_link == false
     end
 }
 
