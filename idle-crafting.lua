@@ -443,16 +443,9 @@ local fulfillment_threshold =
 local argparse = require('argparse')
 
 load_state()
-local positionals = argparse.processArgsGetopt({ ... }, {
-    {
-        't', 'thresholds', hasArg = true,
-        handler = function(optarg)
-            thresholds = argparse.numberList(optarg, 'thresholds')
-        end
-    }
-})
+local positionals = argparse.processArgsGetopt({ ... }, {})
 
-if positionals[1] == 'status' then
+if not positionals[1] or positionals[1] == 'status' then
     ---@type integer[]
     stats = {}
     for _, unit in ipairs(dfhack.units.getCitizens(true, false)) do
@@ -476,7 +469,12 @@ if positionals[1] == 'status' then
     print(('Script is %s with %d workshops configured for idle crafting'):
         format(enabled and 'enabled' or 'disabled', num_workshops))
     print(('The thresholds for "craft item" needs are %s'):
-        format(table.concat(thresholds, '/')))
+        format(table.concat(thresholds, ',')))
+elseif positionals[1] == 'thresholds' then
+    thresholds = argparse.numberList(positionals[2], 'thresholds')
+    table.sort(thresholds, function (a, b) return a > b end)
+    print(('Thresholds for "craft item" needs set to %s'):
+        format(table.concat(thresholds, ',')))
 elseif positionals[1] == 'disable' then
         allowed = {}
         stop()
