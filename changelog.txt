@@ -27,14 +27,18 @@ Template for new versions:
 # Future
 
 ## New Tools
+- `embark-anyone`: allows you to embark as any civilisation, including dead, and non-dwarven ones
 
 - `idle-crafting`: Allow dwarfs to automatically satisfy their need to craft objects.
 
 ## New Features
 
 ## Fixes
+- `timestream`: ensure child growth events (e.g. becoming an adult) are not skipped over
 
 ## Misc Improvements
+- `gui/sitemap`: show whether a unit is friendly, hostile, or wildlife
+- `gui/sitemap`: show whether a unit is caged
 
 ## Removed
 
