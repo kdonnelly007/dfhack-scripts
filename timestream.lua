@@ -100,7 +100,9 @@ end
 local function check_new_unit(unit_id)
     local unit = df.unit.find(unit_id)
     if not unit then return end
-    print('registering new unit', unit.id, dfhack.units.getReadableName(unit))
+    if DEBUG >= 3 then
+        print('registering new unit', unit.id, dfhack.units.getReadableName(unit))
+    end
     register_birthday(unit)
 end
 
