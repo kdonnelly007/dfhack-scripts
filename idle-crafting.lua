@@ -359,13 +359,11 @@ IdleCraftingOverlay.ATTRS {
     default_pos = { x = -42, y = 41 },
     default_enabled = true,
     viewscreens = {
-        'dwarfmode/ViewSheets/BUILDING/Workshop/Craftsdwarfs/Tasks',
+        'dwarfmode/ViewSheets/BUILDING/Workshop/Craftsdwarfs/Workers',
     },
     frame = { w = 55, h = 1 },
     visible = function ()
-        return
-            #df.global.game.main_interface.building.button == 0 and
-            df.global.game.main_interface.stockpile_link.adding_new_link == false
+        return not df.global.game.main_interface.stockpile_link.adding_new_link
     end
 }
 
@@ -374,8 +372,8 @@ function IdleCraftingOverlay:init()
         widgets.CycleHotkeyLabel {
             view_id = 'leisure_toggle',
             frame = { l = 0, t = 0 },
-            label = 'Allow idle dwarfs to satisfy crafting needs:',
-            key = 'CUSTOM_L',
+            label = 'Allow idle dwarves to satisfy crafting needs:',
+            key = 'CUSTOM_I',
             options = {
                 { label = 'yes', value = true, pen = COLOR_GREEN },
                 { label = 'no',  value = false },

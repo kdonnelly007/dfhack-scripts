@@ -38,7 +38,7 @@ Examples
 Overlay
 -------
 
-This script provides an overlay on the "Tasks" tab of Craftsdwarf's workshops,
+This script provides an overlay on the "Workers" tab of Craftsdwarf's workshops,
 allowing you to designate that workshop for use by idle dwarves to satisfy their
 needs to craft objects. Workshops that have a master assigned cannot be used in
 this way.
