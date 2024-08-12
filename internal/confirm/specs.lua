@@ -1,11 +1,12 @@
 --@module = true
 
--- if adding a new spec, just run `confirm` to load it and make it live
+-- if adding a new spec, run `confirm` to load it and make it live
 --
 -- remember to reload the overlay when adding/changing specs that have
 -- intercept_frames defined
 
 local json = require('json')
+local trade_internal = reqscript('internal/caravan/trade')
 
 local CONFIG_FILE = 'dfhack-config/confirm.json'
 
@@ -55,16 +56,21 @@ local mi = df.global.game.main_interface
 local plotinfo = df.global.plotinfo
 
 local function trade_goods_any_selected(which)
-    for _, sel in ipairs(mi.trade.goodflag[which]) do
-        if sel == 1 then return true end
-    end
+    local any_selected = false
+    trade_internal.for_selected_item(which, function()
+        any_selected = true
+        return true
+    end)
+    return any_selected
 end
 
 local function trade_goods_all_selected(which)
-    for _, sel in ipairs(mi.trade.goodflag[which]) do
-        if sel ~= 1 then return false end
-    end
-    return true
+    local num_selected = 0
+    trade_internal.for_selected_item(which, function(idx)
+        print(idx)
+        num_selected = num_selected + 1
+    end)
+    return #mi.trade.goodflag[which] == num_selected
 end
 
 local function trade_agreement_items_any_selected()
@@ -102,7 +108,7 @@ ConfirmSpec{
     title='Cancel trade',
     message='Are you sure you want leave this screen? Selected items will not be saved.',
     intercept_keys={'LEAVESCREEN', '_MOUSE_R'},
-    context='dwarfmode/Trade',
+    context='dwarfmode/Trade/Default',
     predicate=function() return trade_goods_any_selected(0) or trade_goods_any_selected(1) end,
 }
 
@@ -112,7 +118,7 @@ ConfirmSpec{
     message='Are you sure you want mark all fortress goods at the depot? Your current fortress goods selections will be lost.',
     intercept_keys='_MOUSE_L',
     intercept_frame={r=47, b=7, w=12, h=3},
-    context='dwarfmode/Trade',
+    context='dwarfmode/Trade/Default',
     predicate=function() return trade_goods_any_selected(1) and not trade_goods_all_selected(1) end,
     pausable=true,
 }
@@ -123,7 +129,7 @@ ConfirmSpec{
     message='Are you sure you want unmark all fortress goods at the depot? Your current fortress goods selections will be lost.',
     intercept_keys='_MOUSE_L',
     intercept_frame={r=30, b=7, w=14, h=3},
-    context='dwarfmode/Trade',
+    context='dwarfmode/Trade/Default',
     predicate=function() return trade_goods_any_selected(1) and not trade_goods_all_selected(1) end,
     pausable=true,
 }
@@ -134,7 +140,7 @@ ConfirmSpec{
     message='Are you sure you want mark all merchant goods at the depot? Your current merchant goods selections will be lost.',
     intercept_keys='_MOUSE_L',
     intercept_frame={l=0, r=72, b=7, w=12, h=3},
-    context='dwarfmode/Trade',
+    context='dwarfmode/Trade/Default',
     predicate=function() return trade_goods_any_selected(0) and not trade_goods_all_selected(0) end,
     pausable=true,
 }
@@ -145,19 +151,28 @@ ConfirmSpec{
     message='Are you sure you want mark all merchant goods at the depot? Your current merchant goods selections will be lost.',
     intercept_keys='_MOUSE_L',
     intercept_frame={l=0, r=40, b=7, w=14, h=3},
-    context='dwarfmode/Trade',
+    context='dwarfmode/Trade/Default',
     predicate=function() return trade_goods_any_selected(0) and not trade_goods_all_selected(0) end,
     pausable=true,
 }
 
+local function get_ethics_message(msg)
+    local lines = {msg}
+    if trade_internal.has_ethics_violation() then
+        table.insert(lines, '')
+        table.insert(lines, 'You have items selected that will offend the merchants. Proceeding with this trade will anger them. You can click on the Ethics warning badge to see which items the merchants will find offensive.')
+    end
+    return table.concat(lines, NEWLINE)
+end
+
 ConfirmSpec{
     id='trade-confirm-trade',
     title='Confirm trade',
-    message="Are you sure you want to trade the selected goods?",
+    message=curry(get_ethics_message, 'Are you sure you want to trade the selected goods?'),
     intercept_keys='_MOUSE_L',
     intercept_frame={l=0, r=23, b=4, w=11, h=3},
-    context='dwarfmode/Trade',
-    predicate=function() return trade_goods_any_selected(0) and trade_goods_any_selected(1) end,
+    context='dwarfmode/Trade/Default',
+    predicate=function() return trade_goods_any_selected(1) end,
     pausable=true,
 }
 
@@ -167,7 +182,7 @@ ConfirmSpec{
     message='Are you sure you want seize marked merchant goods? This will make the merchant unwilling to trade further and will damage relations with the merchant\'s civilization.',
     intercept_keys='_MOUSE_L',
     intercept_frame={l=0, r=73, b=4, w=11, h=3},
-    context='dwarfmode/Trade',
+    context='dwarfmode/Trade/Default',
     predicate=function() return mi.trade.mer.mood > 0 and trade_goods_any_selected(0) end,
     pausable=true,
 }
@@ -175,10 +190,10 @@ ConfirmSpec{
 ConfirmSpec{
     id='trade-offer',
     title='Offer fortress goods',
-    message='Are you sure you want to offer these goods? You will receive no payment.',
+    message=curry(get_ethics_message, 'Are you sure you want to offer these goods? You will receive no payment.'),
     intercept_keys='_MOUSE_L',
     intercept_frame={l=40, r=5, b=4, w=19, h=3},
-    context='dwarfmode/Trade',
+    context='dwarfmode/Trade/Default',
     predicate=function() return trade_goods_any_selected(1) end,
     pausable=true,
 }
