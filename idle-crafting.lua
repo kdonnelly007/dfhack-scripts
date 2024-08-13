@@ -362,9 +362,6 @@ IdleCraftingOverlay.ATTRS {
         'dwarfmode/ViewSheets/BUILDING/Workshop/Craftsdwarfs/Workers',
     },
     frame = { w = 55, h = 1 },
-    visible = function ()
-        return not df.global.game.main_interface.stockpile_link.adding_new_link
-    end
 }
 
 function IdleCraftingOverlay:init()
