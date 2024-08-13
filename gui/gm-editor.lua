@@ -53,10 +53,23 @@ end
 function getTypeName(type)
     return tostring(type):gmatch('<type: (.+)>')() or '<unknown type>'
 end
+
 function getTargetFromScreens()
     local my_trg = dfhack.gui.getSelectedUnit(true) or dfhack.gui.getSelectedItem(true)
             or dfhack.gui.getSelectedJob(true) or dfhack.gui.getSelectedBuilding(true)
             or dfhack.gui.getSelectedStockpile(true) or dfhack.gui.getSelectedCivZone(true)
+    if not my_trg then
+        if dfhack.gui.matchFocusString('dwarfmode/ViewSheets/ENGRAVING', dfhack.gui.getDFViewscreen(true)) then
+            local sheet = df.global.game.main_interface.view_sheets
+            local pos = xyz2pos(sheet.viewing_x, sheet.viewing_y, sheet.viewing_z)
+            for _, engraving in ipairs(df.global.world.event.engravings) do
+                if same_xyz(engraving.pos, pos) then
+                    my_trg = engraving
+                    break
+                end
+            end
+        end
+    end
     if not my_trg then
         qerror("No valid target found")
     end
@@ -80,14 +93,37 @@ function search_relevance(search, candidate)
     return ret
 end
 
+local RESIZE_MIN = {w=30, h=20}
+
+local function sanitize_frame(frame)
+    local w, h = dfhack.screen.getWindowSize()
+    local min = RESIZE_MIN
+    if frame.t and h - frame.t - (frame.b or 0) < min.h then
+        frame.t = h - min.h
+        frame.b = 0
+    end
+    if frame.b and h - frame.b - (frame.t or 0) < min.h then
+        frame.b = h - min.h
+        frame.t = 0
+    end
+    if frame.l and w - frame.l - (frame.r or 0) < min.w then
+        frame.l = w - min.w
+        frame.r = 0
+    end
+    if frame.r and w - frame.r - (frame.l or 0) < min.w then
+        frame.r = w - min.w
+        frame.l = 0
+    end
+    return frame
+end
 
 GmEditorUi = defclass(GmEditorUi, widgets.Window)
 GmEditorUi.ATTRS{
-    frame=copyall(config.data.frame or {}),
+    frame=sanitize_frame(copyall(config.data.frame or {})),
     frame_title="GameMaster's editor",
     frame_inset=0,
     resizable=true,
-    resize_min={w=30, h=20},
+    resize_min=RESIZE_MIN,
     read_only=(config.data.read_only or false)
 }
 
@@ -433,10 +469,7 @@ function GmEditorUi:gotoPos()
         end
     end
     if pos then
-        dfhack.gui.revealInDwarfmodeMap(pos,true)
-        df.global.game.main_interface.recenter_indicator_m.x = pos.x
-        df.global.game.main_interface.recenter_indicator_m.y = pos.y
-        df.global.game.main_interface.recenter_indicator_m.z = pos.z
+        dfhack.gui.revealInDwarfmodeMap(pos,true,true)
     end
 end
 function GmEditorUi:editSelectedRaw(index,choice)

@@ -4,8 +4,6 @@
 --@ enable=true
 --@ module=true
 
-local json = require("json")
-local persist = require("persist-table")
 local argparse = require("argparse")
 local repeatutil = require("repeat-util")
 
@@ -26,16 +24,19 @@ end
 
 --- Save the current state of the script
 local function persist_state()
-    persist.GlobalTable[GLOBAL_KEY] = json.encode({enabled=enabled,
-        s_maxFish=s_maxFish, s_minFish=s_minFish, s_useRaw=s_useRaw,
-        isFishing=isFishing
+    dfhack.persistent.saveSiteData(GLOBAL_KEY, {
+        enabled=enabled,
+        s_maxFish=s_maxFish,
+        s_minFish=s_minFish,
+        s_useRaw=s_useRaw,
+        isFishing=isFishing,
     })
 end
 
 --- Load the saved state of the script
 local function load_state()
     -- load persistent data
-    local persisted_data = json.decode(persist.GlobalTable[GLOBAL_KEY] or "") or {}
+    local persisted_data = dfhack.persistent.getSiteData(GLOBAL_KEY, {})
     enabled = persisted_data.enabled or false
     s_maxFish = persisted_data.s_maxFish or 100
     s_minFish = persisted_data.s_minFish or 75
@@ -76,7 +77,7 @@ function toggle_fishing_labour(state)
     local work_details = df.global.plotinfo.labor_info.work_details
     for _,v in pairs(work_details) do
         if v.allowed_labors.FISH then
-            v.work_detail_flags.mode = state and
+            v.flags.mode = state and
                 df.work_detail_mode.OnlySelectedDoesThis or df.work_detail_mode.NobodyDoesThis
 
             -- since the work details are not actually applied unless a button

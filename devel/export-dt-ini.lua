@@ -1,18 +1,11 @@
 -- Exports an ini file for Dwarf Therapist.
---[====[
-devel/export-dt-ini
-===================
-Exports an ini file containing memory addresses for Dwarf Therapist.
-]====]
 
-local utils = require 'utils'
 local ms = require 'memscan'
 
 -- Utility functions
 
 local globals = df.global
 local global_addr = dfhack.internal.getAddress
-local os_type = dfhack.getOSType()
 local rdelta = dfhack.internal.getRebaseDelta()
 local lines = {} --as:string[]
 local complete = true
@@ -130,6 +123,7 @@ address('world_site_type',df.world_site,'type')
 address('active_sites_vector',df.world_data,'active_site')
 address('gview',globals,'gview')
 address('external_flag',globals,'game','external_flag')
+address('global_equipment_update',globals,'plotinfo','equipment','update')
 vtable('viewscreen_setupdwarfgame_vtable','viewscreen_setupdwarfgamest')
 
 header('offsets')
@@ -175,7 +169,7 @@ address('tissues_vector',df.creature_raw,'tissue')
 header('caste_offsets')
 address('caste_name',df.caste_raw,'caste_name')
 address('caste_descr',df.caste_raw,'description')
-address('caste_trait_ranges',df.caste_raw,'personality','a')
+address('caste_trait_ranges',df.caste_raw,'personality','min')
 address('caste_phys_att_ranges',df.caste_raw,'attributes','phys_att_range')
 address('baby_age',df.caste_raw,'misc','baby_age')
 address('child_age',df.caste_raw,'misc','child_age')
@@ -242,12 +236,6 @@ address('name_plural',df.itemdef_armorst,'name_plural')
 address('adjective',df.itemdef_armorst,'name_preplural')
 address('tool_flags',df.itemdef_toolst,'flags')
 address('tool_adjective',df.itemdef_toolst,'adjective')
-
-header('item_filter_offsets')
-address('item_subtype',df.item_filter_spec,'item_subtype')
-address('mat_class',df.item_filter_spec,'material_class')
-address('mat_type',df.item_filter_spec,'mattype')
-address('mat_index',df.item_filter_spec,'matindex')
 
 header('weapon_subtype_offsets')
 address('single_size',df.itemdef_weaponst,'two_handed')
@@ -320,11 +308,11 @@ address('civ',df.unit,'civ_id')
 address('specific_refs',df.unit,'specific_refs')
 address('squad_id',df.unit,'military','squad_id')
 address('squad_position',df.unit,'military','squad_position')
-address('recheck_equipment',df.unit,'military','pickup_flags')
+address('recheck_equipment',df.unit,'uniform','pickup_flags')
 address('mood',df.unit,'mood')
 address('birth_year',df.unit,'birth_year')
 address('birth_time',df.unit,'birth_time')
-address('pet_owner_id',df.unit,'relationship_ids',df.unit_relationship_type.Pet)
+address('pet_owner_id',df.unit,'relationship_ids',df.unit_relationship_type.PetOwner)
 address('current_job',df.unit,'job','current_job')
 address('physical_attrs',df.unit,'body','physical_attrs')
 address('body_size',df.unit,'appearance','body_modifiers')
@@ -405,13 +393,13 @@ address('focus_level',df.unit_personality.T_needs,'focus_level')
 address('need_level',df.unit_personality.T_needs,'need_level')
 
 header('emotion_offsets')
-address('emotion_type',df.unit_personality.T_emotions,'type')
-address('strength',df.unit_personality.T_emotions,'strength')
-address('thought_id',df.unit_personality.T_emotions,'thought')
-address('sub_id',df.unit_personality.T_emotions,'subthought')
-address('level',df.unit_personality.T_emotions,'severity')
-address('year',df.unit_personality.T_emotions,'year')
-address('year_tick',df.unit_personality.T_emotions,'year_tick')
+address('emotion_type',df.personality_moodst,'type')
+address('strength',df.personality_moodst,'relative_strength')
+address('thought_id',df.personality_moodst,'thought')
+address('sub_id',df.personality_moodst,'subthought')
+address('level',df.personality_moodst,'severity')
+address('year',df.personality_moodst,'year')
+address('year_tick',df.personality_moodst,'year_tick')
 
 header('job_details')
 address('id',df.job,'job_type')
@@ -433,22 +421,27 @@ value('sched_size',df.squad_schedule_entry:sizeof())
 address('sched_orders',df.squad_schedule_entry,'orders')
 address('sched_assign',df.squad_schedule_entry,'order_assignments')
 address('alert',df.squad,'cur_routine_idx')
-address('carry_food',df.squad,'carry_food')
-address('carry_water',df.squad,'carry_water')
+address('carry_food',df.squad,'supplies','carry_food')
+address('carry_water',df.squad,'supplies','carry_water')
 address('ammunition',df.squad,'ammo','ammunition')
 address('ammunition_qty',df.squad_ammo_spec,'amount')
-address('quiver',df.squad_position,'quiver')
-address('backpack',df.squad_position,'backpack')
-address('flask',df.squad_position,'flask')
-address('armor_vector',df.squad_position,'uniform','body')
-address('helm_vector',df.squad_position,'uniform','head')
-address('pants_vector',df.squad_position,'uniform','pants')
-address('gloves_vector',df.squad_position,'uniform','gloves')
-address('shoes_vector',df.squad_position,'uniform','shoes')
-address('shield_vector',df.squad_position,'uniform','shield')
-address('weapon_vector',df.squad_position,'uniform','weapon')
-address('uniform_item_filter',df.squad_uniform_spec,'item_filter')
+address('quiver',df.squad_position,'equipment','quiver')
+address('backpack',df.squad_position,'equipment','backpack')
+address('flask',df.squad_position,'equipment','flask')
+address('armor_vector',df.squad_position,'equipment','uniform','body')
+address('helm_vector',df.squad_position,'equipment','uniform','head')
+address('pants_vector',df.squad_position,'equipment','uniform','pants')
+address('gloves_vector',df.squad_position,'equipment','uniform','gloves')
+address('shoes_vector',df.squad_position,'equipment','uniform','shoes')
+address('shield_vector',df.squad_position,'equipment','uniform','shield')
+address('weapon_vector',df.squad_position,'equipment','uniform','weapon')
+address('uniform_spec_item_type',df.squad_uniform_spec,'item_type')
+address('uniform_spec_item_subtype',df.squad_uniform_spec,'item_subtype')
+address('uniform_spec_mat_class',df.squad_uniform_spec,'material_class')
+address('uniform_spec_mat_type',df.squad_uniform_spec,'mattype')
+address('uniform_spec_mat_index',df.squad_uniform_spec,'matindex')
 address('uniform_indiv_choice',df.squad_uniform_spec,'indiv_choice')
+address('equipment_update',df.squad,'ammo','update')
 
 header('activity_offsets')
 address('activity_type',df.activity_entry,'type')
@@ -459,8 +452,8 @@ address('sq_skill',df.activity_event_skill_demonstrationst,'skill')
 address('sq_train_rounds',df.activity_event_skill_demonstrationst,'train_rounds')
 address('pray_deity',df.activity_event_prayerst,'histfig_id')
 address('pray_sphere',df.activity_event_prayerst,'topic')
-address('knowledge_category',df.activity_event_ponder_topicst,'knowledge','flag_type')
-address('knowledge_flag',df.activity_event_ponder_topicst,'knowledge','flag_data')
+address('knowledge_category',df.activity_event_ponder_topicst,'topic','research','flag_type')
+address('knowledge_flag',df.activity_event_ponder_topicst,'topic','research','flag_data')
 address('perf_type',df.activity_event_performancest,'type')
 address('perf_participants',df.activity_event_performancest,'participant_actions')
 address('perf_histfig',df.activity_event_performancest.T_participant_actions,'histfig_id')
@@ -510,7 +503,6 @@ end
 
 write_flags('valid_flags_2', {})
 write_flags('invalid_flags_1', {
-    { 'a skeleton', { df.unit_flags1.skeleton } },
     { 'a merchant', { df.unit_flags1.merchant } },
     { 'outpost liaison, diplomat, or artifact requesting visitor', { df.unit_flags1.diplomat } },
     { 'an invader or hostile', { df.unit_flags1.active_invader } },

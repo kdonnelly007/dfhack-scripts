@@ -18,8 +18,10 @@ end
 OVERLAY_WIDGETS = {
     trade=trade.TradeOverlay,
     tradebanner=trade.TradeBannerOverlay,
+    tradeethics=trade.TradeEthicsWarningOverlay,
     tradeagreement=tradeagreement.TradeAgreementOverlay,
     movegoods=movegoods.MoveGoodsOverlay,
+    movegoods_hider=movegoods.MoveGoodsHiderOverlay,
     assigntrade=movegoods.AssignTradeOverlay,
     displayitemselector=pedestal.PedestalOverlay,
 }
