@@ -263,7 +263,9 @@ local TICKS_PER_MONTH = 28 * TICKS_PER_DAY
 
 function Pregnancy:get_pregnancy_desc()
     local mother = self:get_mother()
-    if not mother or not mother.pregnancy_genes then return 'Not currently pregnant' end
+    if not mother or not mother.pregnancy_genes or mother.pregnancy_timer <= 0 then
+        return 'Not currently pregnant'
+    end
     local term_str = 'today'
     if mother.pregnancy_timer > TICKS_PER_MONTH then
         local num_months = (mother.pregnancy_timer + TICKS_PER_MONTH//2) // TICKS_PER_MONTH
@@ -291,10 +293,13 @@ function Pregnancy:get_spouse_hf(who)
         return df.historical_figure.find(spouse.hist_figure_id)
     end
 
-    for _, relation in ipairs(unit.histfig_links) do
-        if relation._type == df.histfig_hf_link_spousest then
+    local hf = df.historical_figure.find(unit.hist_figure_id)
+    if not hf then return end
+
+    for _, link in ipairs(hf.histfig_links) do
+        if link._type == df.histfig_hf_link_spousest then
             -- may be nil due to hf culling, but then we just treat it as not having a spouse
-            return df.historical_figure.find(relation.target_hf)
+            return df.historical_figure.find(link.target_hf)
         end
     end
 end
