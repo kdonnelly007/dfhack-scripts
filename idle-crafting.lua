@@ -116,7 +116,7 @@ local STONE_CRAFT = df.unit_labor['STONE_CRAFT']
 ---negative crafting focus penalty
 ---@param unit df.unit
 ---@return number
-local function getCraftingNeed(unit)
+function getCraftingNeed(unit)
     local needs = unit.status.current_soul.personality.needs
     for _, need in ipairs(needs) do
         if need.id == CraftObject then
@@ -163,7 +163,7 @@ end
 ---unit is ready to take jobs
 ---@param unit df.unit
 ---@return boolean
-local function unitIsAvailable(unit)
+function unitIsAvailable(unit)
     if unit.job.current_job then
         return false
     elseif #unit.social_activities > 0 then
@@ -184,7 +184,7 @@ end
 ---@param idx integer "index of the unit's group"
 ---@param unit_id integer
 ---@return boolean "proceed to next workshop"
-function processUnit(workshop, idx, unit_id)
+local function processUnit(workshop, idx, unit_id)
     local unit = df.unit.find(unit_id)
     -- check that unit is still there and not caged or chained
     if not unit or unit.flags1.caged or unit.flags1.chained then
@@ -220,7 +220,7 @@ end
 
 ---@param workshop df.building_workshopst
 ---@return boolean
-function invalidProfile(workshop)
+local function invalidProfile(workshop)
     local profile = workshop.profile
     return (#profile.permitted_workers > 0) or
         (profile.blocked_labors[BONE_CARVE] and profile.blocked_labors[STONE_CRAFT])
