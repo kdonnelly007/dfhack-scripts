@@ -186,8 +186,8 @@ end
 ---@return boolean "proceed to next workshop"
 function processUnit(workshop, idx, unit_id)
     local unit = df.unit.find(unit_id)
-    -- check that unit is still there
-    if not unit then
+    -- check that unit is still there and not caged or chained
+    if not unit or unit.flags1.caged or unit.flags1.chained then
         watched[idx][unit_id] = nil
         return false
     elseif not canAccessWorkshop(unit, workshop) then
