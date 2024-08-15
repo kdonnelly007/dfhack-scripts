@@ -28,6 +28,7 @@ Template for new versions:
 
 ## New Tools
 - `embark-anyone`: allows you to embark as any civilisation, including dead, and non-dwarven ones
+- `idle-crafting`: Allow dwarfs to automatically satisfy their need to craft objects.
 - `gui/pregnancy`: view and generate pregnancies with specified parents
 
 ## New Features
