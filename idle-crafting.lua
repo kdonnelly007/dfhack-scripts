@@ -355,7 +355,7 @@ end
 
 IdleCraftingOverlay = defclass(IdleCraftingOverlay, overlay.OverlayWidget)
 IdleCraftingOverlay.ATTRS {
-    desc = 'Adds a toggle for recreational crafting to Craftdwarf's workshops.',
+    desc = "Adds a toggle for recreational crafting to Craftdwarf's workshops.",
     default_pos = { x = -42, y = 41 },
     default_enabled = true,
     viewscreens = {
