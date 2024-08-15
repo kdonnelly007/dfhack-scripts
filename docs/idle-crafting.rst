@@ -27,7 +27,8 @@ Usage
      to ``500,1000,10000``.
 
 ``disable idle-crafting``
-     Disallow idle crafting at all workshops and disable the tool.
+     Disallow idle crafting at all workshops. You can re-enable idle crafting
+     at individual Craftsdwarf's workshops.
 
 Examples
 --------

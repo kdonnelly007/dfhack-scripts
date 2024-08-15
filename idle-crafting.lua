@@ -144,7 +144,7 @@ end
 ---@return df.building_workshopst|nil
 local function locateWorkshop(id)
     local workshop = df.building.find(id)
-    if df.building_workshopst:is_instance(workshop) and workshop.type == 3 then
+    if df.building_workshopst:is_instance(workshop) and workshop.type == df.workshop_type.Craftsdwarfs then
         return workshop
     else
         return nil
@@ -355,7 +355,7 @@ end
 
 IdleCraftingOverlay = defclass(IdleCraftingOverlay, overlay.OverlayWidget)
 IdleCraftingOverlay.ATTRS {
-    desc = 'Adds a UI to the Workers tab too enable idle crafting.',
+    desc = 'Adds a toggle for recreational crafting to Craftdwarf's workshops.',
     default_pos = { x = -42, y = 41 },
     default_enabled = true,
     viewscreens = {
