@@ -74,7 +74,7 @@ selected, then the range of items will be selected.
 
 If any current merchants have ethical concerns, the list of goods that you can
 bring to the depot is automatically filtered (by default) to only show
-ethically acceptible items. Be aware that, again, by default, if you have items
+ethically acceptable items. Be aware that, again, by default, if you have items
 in bins, and there are unethical items mixed into the bins, then the bins will
 still be brought to the depot so you can trade the ethical items within those
 bins. Please use the DFHack enhanced trade screen for the actual barter to
@@ -96,7 +96,7 @@ Trade screen
 
 **caravan.trade**
 
-This overlay enables some convenent gestures and keyboard shortcuts for working
+This overlay enables some convenient gestures and keyboard shortcuts for working
 with bins:
 
 - ``Shift-Click checkbox``: Select all items inside a bin without selecting the

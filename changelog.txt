@@ -137,7 +137,7 @@ Template for new versions:
 - `caravan`: remember filter settings for pedestal item assignment dialog
 - `quickfort`: new ``delete`` command for deleting player-owned blueprints (library and mod-added blueprints cannot be deleted)
 - `quickfort`: support enabling `logistics` features for autoforbid and autoclaim on stockpiles
-- `gui/quickfort`: allow farm plots, dirt roads, and paved roads to be designated around partial obstructions without callling it an error, matching vanilla behavior
+- `gui/quickfort`: allow farm plots, dirt roads, and paved roads to be designated around partial obstructions without calling it an error, matching vanilla behavior
 - `gui/launcher`: refresh default tag filter when mortal mode is toggled in `gui/control-panel` so changes to which tools autocomplete take effect immediately
 - `gui/civ-alert`: you can now register multiple burrows as civilian alert safe spaces
 - `exterminate`: add ``all`` target for convenient scorched earth tactics
@@ -209,7 +209,7 @@ Template for new versions:
 ## Fixes
 - `open-legends`: don't interfere with the dragging of vanilla list scrollbars
 - `gui/create-item`: properly restrict bags to bag materials by default
-- `gui/create-item`: allow gloves and shoees to be made out of textiles by default
+- `gui/create-item`: allow gloves and shoes to be made out of textiles by default
 - `exterminate`: don't classify dangerous non-invader units as friendly (e.g. snatchers)
 
 ## Misc Improvements
@@ -257,7 +257,7 @@ Template for new versions:
 # 50.12-r2
 
 ## New Tools
-- `agitation-rebalance`: alter mechanics of irriation-related attacks so they are less constant and are more responsive to recent player bahavior
+- `agitation-rebalance`: alter mechanics of irritation-related attacks so they are less constant and are more responsive to recent player behavior
 - `fix/ownership`: fix instances of multiple citizens claiming the same items, resulting in "Store owned item" job loops
 - `fix/stuck-worship`: fix prayer so units don't get stuck in uninterruptible "Worship!" states
 - `instruments`: provides information on how to craft the instruments used by the player civilization
@@ -306,7 +306,7 @@ Template for new versions:
 - `gui/notify`: display important notifications that vanilla doesn't support yet and provide quick zoom links to notification targets.
 - `list-waves`: (reinstated) show migration wave information
 - `make-legendary`: (reinstated) make a dwarf legendary in specified skills
-- `combat-harden`: (reinstated) set a dwarf's resistence to being affected by visible corpses
+- `combat-harden`: (reinstated) set a dwarf's resistance to being affected by visible corpses
 - `add-thought`: (reinstated) add custom thoughts to a dwarf
 - `devel/input-monitor`: interactive UI for debugging input issues
 
@@ -565,7 +565,7 @@ Template for new versions:
 - `workorder`: reduce existing orders for automatic shearing and milking jobs when animals are no longer available
 - `gui/quickfort`: adapt "cursor lock" to mouse controls so it's easier to see the full preview for multi-level blueprints before you apply them
 - `gui/quickfort`: only display post-blueprint messages once when repeating the blueprint up or down z-levels
-- `combine`: reduce max different stacks in containers to 30 to prevent contaners from getting overfull
+- `combine`: reduce max different stacks in containers to 30 to prevent containers from getting overfull
 
 ## Removed
 - `gui/automelt`: replaced by an overlay panel that appears when you click on a stockpile
@@ -597,7 +597,7 @@ Template for new versions:
 ## Misc Improvements
 - `gui/quickfort`: blueprints that designate items for dumping/forbidding/etc. no longer show an error highlight for tiles that have no items on them
 - `gui/quickfort`: place (stockpile layout) mode is now supported. note that detailed stockpile configurations were part of query mode and are not yet supported
-- `gui/quickfort`: you can now generate manager orders for items required to complete bluerpints
+- `gui/quickfort`: you can now generate manager orders for items required to complete blueprints
 - `gui/create-item`: ask for number of items to spawn by default
 - `light-aquifers-only`: now available as a fort Autostart option in `gui/control-panel`. note that it will only appear if "armok" tools are configured to be shown on the Preferences tab.
 - `gui/gm-editor`: when passing the ``--freeze`` option, further ensure that the game is frozen by halting all rendering (other than for DFHack tool windows)
@@ -713,7 +713,7 @@ Template for new versions:
 - `troubleshoot-item`: reports on the contents of containers with counts for each contained item type
 - `devel/visualize-structure`: now automatically inspects the contents of most pointer fields, rather than inspecting the pointers themselves
 - `devel/query`: will now search for jobs at the map coordinate highlighted, if no explicit job is highlighted and there is a map tile highlighted
-- `caravan`: add trade screen overlay that assists with seleting groups of items and collapsing groups in the UI
+- `caravan`: add trade screen overlay that assists with selecting groups of items and collapsing groups in the UI
 - `gui/gm-editor`: will now inspect a selected building itself if the building has no current jobs
 
 ## Removed
@@ -779,7 +779,7 @@ Template for new versions:
 - `gui/quickfort`: don't close the window when applying a blueprint so players can apply the same blueprint multiple times more easily
 - `locate-ore`: now only searches revealed tiles by default
 - `modtools/spawn-liquid`: sets tile temperature to stable levels when spawning water or magma
--@ `prioritize`: pushing minecarts is now included in the default priortization list
+-@ `prioritize`: pushing minecarts is now included in the default prioritization list
 - `prioritize`: now automatically starts boosting the default list of job types when enabled
 - `unforbid`: avoids unforbidding unreachable and underwater items by default
 - `gui/create-item`: added whole corpse spawning alongside corpsepieces. (under "corpse")

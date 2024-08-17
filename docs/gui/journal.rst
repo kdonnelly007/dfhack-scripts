@@ -14,7 +14,7 @@ and both short-term and long-term plans.
 
 This is particularly useful when you need to take a longer break from the game.
 Having detailed notes makes it much easier to resume your game after
-a few weekds or months, without losing track of your progress and objectives.
+a few weeks or months, without losing track of your progress and objectives.
 
 Supported Features
 ------------------

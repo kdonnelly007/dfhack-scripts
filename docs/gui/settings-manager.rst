@@ -45,7 +45,7 @@ automatically restored when you embark on a new fort. This will toggle the
 relevant command in `gui/control-panel` on the Automation -> Autostart page.
 
 There is a similar panel on the Labor -> Work Details page that allows for
-saving and restoring of work detail definitons. Be aware that work detail
+saving and restoring of work detail definitions. Be aware that work detail
 assignments to units cannot be saved, so you have to assign the work details to
 individual units after you restore the definitions. Another caveat is that DF
 doesn't evaluate work detail definitions until a change (any change) is made on
