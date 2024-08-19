@@ -22,4 +22,3 @@ Note
 Non-dwarven civs have their own mechanics and are likely to lack recipes which can render fortress mode difficult
 or unplayable. Preparing carefully is advised, and some crucial items may need to be
 spawned in with other DFHack tools (e.g. `gui/create-item`). Additionally, missing crafting recipes can be added using `add-recipe`.
-
