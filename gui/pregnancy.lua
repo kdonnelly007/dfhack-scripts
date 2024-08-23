@@ -14,7 +14,7 @@ end
 local function can_have_spouse(unit)
     if not unit then return end
     local caste_flags = unit.enemy.caste_flags
-    return caste_flags.CAN_SPEAK or caste_flags.CAN_LEARN
+    return caste_flags.CAN_LEARN and not caste_flags.SLOW_LEARNER
 end
 
 -- clears other_hf's link to hf (assumes there's only one reverse link)
@@ -217,9 +217,10 @@ function Pregnancy:init()
                         return not mother or mother.relationship_ids.Spouse == -1
                     end,
                     enabled=function()
-                        if not can_have_spouse(self:get_mother()) then return false end
+                        local mother = self:get_mother()
                         local father = self:get_father()
-                        return father and father.relationship_ids.Spouse == -1
+                        return mother and mother.relationship_ids.Spouse == -1 and can_have_spouse(mother) and
+                            father and father.relationship_ids.Spouse == -1
                     end,
                 },
                 widgets.HotkeyLabel{
@@ -341,9 +342,10 @@ function Pregnancy:init()
                         return not father or father.relationship_ids.Spouse == -1
                     end,
                     enabled=function()
-                        if not can_have_spouse(self:get_father()) then return false end
                         local mother = self:get_mother()
-                        return mother and mother.relationship_ids.Spouse == -1
+                        local father = self:get_father()
+                        return mother and mother.relationship_ids.Spouse == -1 and can_have_spouse(mother) and
+                            father and father.relationship_ids.Spouse == -1
                     end,
                 },
                 widgets.HotkeyLabel{
