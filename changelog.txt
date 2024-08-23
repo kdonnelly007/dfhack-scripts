@@ -39,6 +39,7 @@ Template for new versions:
 ## Fixes
 - `timestream`: ensure child growth events (e.g. becoming an adult) are not skipped over
 - `empty-bin`: ``--liquids`` option correctly emptying containers filled with LIQUID_MISC
+- `gui/design`: Update Line & Freeform tools to not overcount tiles
 
 ## Misc Improvements
 - `gui/sitemap`: show whether a unit is friendly, hostile, or wildlife
