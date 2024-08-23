@@ -11,6 +11,12 @@ local function is_viable_partner(unit, required_pronoun)
     return unit and unit.sex == required_pronoun and dfhack.units.isAdult(unit) and dfhack.units.isSane(unit)
 end
 
+local function can_have_spouse(unit)
+    if not unit then return end
+    local caste_flags = unit.enemy.caste_flags
+    return caste_flags.CAN_SPEAK or caste_flags.CAN_LEARN
+end
+
 -- clears other_hf's link to hf (assumes there's only one reverse link)
 local function clear_rev_hf_link(link_type, hfid, other_hfid)
     local other_hf = df.historical_figure.find(other_hfid)
@@ -148,11 +154,11 @@ function Pregnancy:init()
                 },
                 widgets.Label{
                     frame={t=3, l=0},
-                    text='Spouse:',
+                    text={{text='Spouse:', pen=function() return can_have_spouse(self:get_mother()) and COLOR_WHITE or COLOR_GRAY end}},
                 },
                 widgets.Label{
                     frame={t=3, l=8},
-                    text='None',
+                    text={{text='None', pen=function() return can_have_spouse(self:get_mother()) and COLOR_WHITE or COLOR_GRAY end}},
                     visible=function() return not self:get_spouse_unit('mother') and not self:get_spouse_hf('mother') end,
                 },
                 widgets.Label{
@@ -166,10 +172,9 @@ function Pregnancy:init()
                 widgets.Label{
                     frame={t=3, l=8},
                     text={
-                        {text=self:callback('get_spouse_hf_name', 'mother')},
-                        ' (off-site)',
+                        {text=self:callback('get_spouse_hf_name', 'mother'), pen=COLOR_BLUE},
+                        {gap=1, text='(off-site)', pen=COLOR_YELLOW},
                     },
-                    text_pen=COLOR_BLUE,
                     auto_width=true,
                     visible=function() return not self:get_spouse_unit('mother') and self:get_spouse_hf('mother') end,
                 },
@@ -189,7 +194,10 @@ function Pregnancy:init()
                     label="Dissolve spouse relationship",
                     key='CUSTOM_X',
                     auto_width=true,
-                    on_activate=function() clear_spouse(self:get_mother()) self.dirty = 2 end,
+                    on_activate=function()
+                        clear_spouse(self:get_mother())
+                        self.dirty = 3
+                    end,
                     visible=function()
                         local mother = self:get_mother()
                         return mother and mother.relationship_ids.Spouse ~= -1
@@ -200,13 +208,16 @@ function Pregnancy:init()
                     label="Set selected father as spouse",
                     key='CUSTOM_X',
                     auto_width=true,
-                    on_activate=function() set_spouse(self:get_mother(), self:get_father()) self.dirty = 2 end,
+                    on_activate=function()
+                        set_spouse(self:get_mother(), self:get_father())
+                        self.dirty = 3
+                    end,
                     visible=function()
                         local mother = self:get_mother()
                         return not mother or mother.relationship_ids.Spouse == -1
                     end,
                     enabled=function()
-                        if self.mother_id == -1 then return false end
+                        if not can_have_spouse(self:get_mother()) then return false end
                         local father = self:get_father()
                         return father and father.relationship_ids.Spouse == -1
                     end,
@@ -261,11 +272,11 @@ function Pregnancy:init()
                 },
                 widgets.Label{
                     frame={t=2, l=0},
-                    text='Spouse:',
+                    text={{text='Spouse:', pen=function() return can_have_spouse(self:get_father()) and COLOR_WHITE or COLOR_GRAY end}},
                 },
                 widgets.Label{
                     frame={t=2, l=8},
-                    text='None',
+                    text={{text='None', pen=function() return can_have_spouse(self:get_father()) and COLOR_WHITE or COLOR_GRAY end}},
                     visible=function() return not self:get_spouse_unit('father') and not self:get_spouse_hf('father') end,
                 },
                 widgets.Label{
@@ -285,10 +296,9 @@ function Pregnancy:init()
                 widgets.Label{
                     frame={t=2, l=8},
                     text={
-                        {text=self:callback('get_spouse_hf_name', 'father')},
-                        ' (off-site)',
+                        {text=self:callback('get_spouse_hf_name', 'father'), pen=COLOR_CYAN},
+                        {gap=1, text='(off-site)', pen=COLOR_YELLOW},
                     },
-                    text_pen=COLOR_CYAN,
                     auto_width=true,
                     visible=function() return not self:get_spouse_unit('father') and self:get_spouse_hf('father') end,
                 },
@@ -308,7 +318,10 @@ function Pregnancy:init()
                     label="Dissolve spouse relationship",
                     key='CUSTOM_SHIFT_X',
                     auto_width=true,
-                    on_activate=function() clear_spouse(self:get_father()) self.dirty = 2 end,
+                    on_activate=function()
+                        clear_spouse(self:get_father())
+                        self.dirty = 3
+                    end,
                     visible=function()
                         local father = self:get_father()
                         return father and father.relationship_ids.Spouse ~= -1
@@ -319,13 +332,16 @@ function Pregnancy:init()
                     label="Set selected mother as spouse",
                     key='CUSTOM_SHIFT_X',
                     auto_width=true,
-                    on_activate=function() set_spouse(self:get_mother(), self:get_father()) self.dirty = 2 end,
+                    on_activate=function()
+                        set_spouse(self:get_mother(), self:get_father())
+                        self.dirty = 3
+                    end,
                     visible=function()
                         local father = self:get_father()
                         return not father or father.relationship_ids.Spouse == -1
                     end,
                     enabled=function()
-                        if self.father_id == -1 then return false end
+                        if not can_have_spouse(self:get_father()) then return false end
                         local mother = self:get_mother()
                         return mother and mother.relationship_ids.Spouse == -1
                     end,
