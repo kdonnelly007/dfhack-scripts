@@ -45,6 +45,7 @@ Template for new versions:
 - `gui/sitemap`: show whether a unit is caged
 
 ## Removed
+- `gui/family-affairs`: merged into `gui/pregnancy`
 
 # 50.13-r4
 
