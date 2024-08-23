@@ -643,7 +643,7 @@ function FreeForm:update(points, extra_points)
         for x, y_row in pairs(line_class.arr) do
             for y, _ in pairs(y_row) do
                 if not self.arr[x] then self.arr[x] = {} end
-                if not self.arr[x][y] then 
+                if not self.arr[x][y] then
                     self.arr[x][y] = true
                     self.num_tiles = self.num_tiles + 1
                 end
