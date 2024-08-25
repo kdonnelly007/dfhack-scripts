@@ -1,41 +1,42 @@
-gui/pregnancy
-=============
+gui/family-affairs
+==================
 
 .. dfhack-tool::
-    :summary: Generate pregnancies with pairings of your choice.
+    :summary: Manage romantic relationships and generate pregnancies.
     :tags: adventure fort armok animals units
 
-This tool provides an interface for producing pregnancies with specific mothers
-and fathers. It can also assign or unassign spouses.
+This tool provides an interface for inspecting (or meddling with) romantic
+relationships and for producing pregnancies with specific mothers and fathers.
+Perfect for matchmaking players!
 
-If a unit is selected when you run `gui/pregnancy`, they will be pre-selected
-as a parent. If the unit has a spouse of a different gender, they will be
-automatically selected as the other parent. You can click on other units on the
-map and choose them as alternate mothers or fathers as desired.
+If a unit is selected when you run `gui/family-affairs`, they will be
+pre-loaded as a romantic partner (or prospective parent). While the window is
+up, you can click on units on the map and assign them roles in the
+`gui/family-affairs` UI.
 
-If a unit is selected as a mother or father, or is listed as a spouse, you can
-zoom the map to their location by clicking on their name in the `gui/pregnancy`
-UI.
+You can click on unit names in the `gui/family-affairs` UI to zoom the map to
+their location.
 
-A unit must be on the map to participate in a pregnancy. For example, you
-cannot designate a father that is not on-site, even if they are the selected
-mother's spouse.
+Whereas you can choose any historical figure (of the same race) to serve as a
+spouse or lover, a unit must be on the map to participate in a pregnancy. For
+example, you cannot generate a pregnancy with a father that is not on-site,
+even if they are the selected mother's spouse.
 
-You can make the selected parents spouses by clicking on the "Set selected
-<parent> as spouse" button, but the button is only enabled if you first
-dissolve existing spouse relationships for both partners. If either new spouse
-has existing lovers, you'll get a confirmation dialog, and if you choose to
-proceed, the lover relationships will be removed.
-
-Children and units that are insane cannot be selected as a parent, and, due to
-game limitations, cross-species pregnancies are not supported.
+Children and units that are insane cannot be selected for participation in a
+pregnancy, and, due to game limitations, cross-species pregnancies are not
+supported.
 
 Usage
 -----
 
 ::
 
-    gui/pregnancy
+    gui/family-affairs
+    gui/family-affairs --pregnancy
+
+Passing the ``--pregnancy`` option will start the `gui/family-affairs` UI on
+the "Pregnancies" tab, and any (adult, sane) unit you have selected at the time
+will be pre-selected as a parent.
 
 Technical notes
 ---------------
