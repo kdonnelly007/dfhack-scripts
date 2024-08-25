@@ -29,7 +29,7 @@ Template for new versions:
 ## New Tools
 - `embark-anyone`: allows you to embark as any civilisation, including dead, and non-dwarven ones
 - `idle-crafting`: Allow dwarfs to automatically satisfy their need to craft objects.
-- `gui/pregnancy`: view and generate pregnancies or arrange marriages with specified partners
+- `gui/family-affairs`: (reinstated) inspect or meddle with pregnancies, marriages, or lover relationsips
 
 ## New Features
 - `caravan`: DFHack dialogs for trade screens (both ``Bring goods to depot`` and the ``Trade`` barter screen) can now filter by item origins (foreign vs. fort-made) and can filter bins by whether they have a mix of ethically acceptable and unacceptable items in them
@@ -46,7 +46,6 @@ Template for new versions:
 - `gui/sitemap`: show whether a unit is caged
 
 ## Removed
-- `gui/family-affairs`: merged into `gui/pregnancy`
 
 # 50.13-r4
 
