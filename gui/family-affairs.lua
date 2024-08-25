@@ -1,3 +1,4 @@
+local argparse = require('argparse')
 local dlg = require('gui.dialogs')
 local gui = require('gui')
 local widgets = require('gui.widgets')
@@ -8,7 +9,8 @@ local widgets = require('gui.widgets')
 
 local function zoom_to(unit)
     if not unit then return end
-    dfhack.gui.revealInDwarfmodeMap(xyz2pos(dfhack.units.getPosition(unit)), true, true)
+    local pos = xyz2pos(dfhack.units.getPosition(unit))
+    dfhack.gui.revealInDwarfmodeMap(pos, true, true)
 end
 
 local function is_viable_parent(unit, required_pronoun)
@@ -21,7 +23,7 @@ local function can_have_spouse(unit)
     return caste_flags.CAN_LEARN and not caste_flags.SLOW_LEARNER
 end
 
--- clears other_hf's link to hf (assumes there's only one reverse link)
+-- clears other_hf's link to hf (will clear only one reverse link if there are multiple)
 local function remove_hf_link(link_type, hfid, other_hfid)
     local other_hf = df.historical_figure.find(other_hfid)
     if not other_hf then return end
@@ -86,23 +88,10 @@ local function get_name(unit_or_hf)
     return unit_or_hf and dfhack.units.getReadableName(unit_or_hf) or ''
 end
 
-local function get_spouse_unit(unit)
-    if not unit then return end
-    return df.unit.find(unit.relationship_ids.Spouse)
-end
-
 local function get_spouse_hf(unit)
-    if not unit or unit.relationship_ids.Spouse == -1 then
-        return
-    end
-    local spouse = df.unit.find(unit.relationship_ids.Spouse)
-    if spouse then
-        return df.historical_figure.find(spouse.hist_figure_id)
-    end
-
+    if not unit then return end
     local hf = df.historical_figure.find(unit.hist_figure_id)
     if not hf then return end
-
     for _, link in ipairs(hf.histfig_links) do
         if link._type == df.histfig_hf_link_spousest then
             -- may be nil due to hf culling, but then we just treat it as not having a spouse
@@ -111,15 +100,22 @@ local function get_spouse_hf(unit)
     end
 end
 
-local function clear_spouse(unit, noconfirm)
+local function get_spouse_unit(unit)
+    local spouse_hf = get_spouse_hf(unit)
+    if not spouse_hf then return end
+    return df.unit.find(spouse_hf.unit_id)
+end
+
+local function clear_spouse(unit, accept_fn, noconfirm)
     if not unit then return end
     local function do_clear_spouse()
+        local spouse = get_spouse_unit(unit)
         clear_hf_links(df.histfig_hf_link_spousest, unit.hist_figure_id)
-        local spouse = df.unit.find(unit.relationship_ids.Spouse)
         if spouse then
             spouse.relationship_ids.Spouse = -1
         end
         unit.relationship_ids.Spouse = -1
+        accept_fn()
     end
     if noconfirm then
         do_clear_spouse()
@@ -140,10 +136,10 @@ local function add_hf_link(link_type, hfid, other_hfid)
     hf.histfig_links:insert('#', link)
 end
 
-local function set_spouse(unit1, unit2)
+local function set_spouse(unit1, unit2, accept_fn)
     local function do_set_spouse()
-        clear_spouse(unit1, true)
-        clear_spouse(unit2, true)
+        clear_spouse(unit1, function() end, true)
+        clear_spouse(unit2, function() end, true)
         unit1.relationship_ids.Spouse = unit2.id
         unit2.relationship_ids.Spouse = unit1.id
         add_hf_link(df.histfig_hf_link_spousest, unit1.hist_figure_id, unit2.hist_figure_id)
@@ -151,6 +147,7 @@ local function set_spouse(unit1, unit2)
         dfhack.gui.showAutoAnnouncement(df.announcement_type.MARRIAGE, xyz2pos(dfhack.units.getPosition(unit1)),
             ('%s and %s have married!'):format(dfhack.TranslateName(unit1.name), dfhack.TranslateName(unit2.name)),
             COLOR_LIGHTMAGENTA)
+        accept_fn()
     end
     local unit1_has_lovers = has_hf_links(df.histfig_hf_link_loverst, unit1.hist_figure_id)
     local unit2_has_lovers = has_hf_links(df.histfig_hf_link_loverst, unit2.hist_figure_id)
@@ -199,7 +196,7 @@ function RelationshipsPage:init()
         },
         widgets.HotkeyLabel{
             frame={t=2, l=0},
-            label="Inspect selected unit",
+            label="Switch to selected unit",
             key='CUSTOM_U',
             auto_width=true,
             on_activate=self:callback('set_unit'),
@@ -239,14 +236,8 @@ function RelationshipsPage:init()
             label="Dissolve spouse relationship",
             key='CUSTOM_X',
             auto_width=true,
-            on_activate=function()
-                clear_spouse(self:get_unit())
-                self.dirty = 2
-            end,
-            visible=function()
-                local unit = self:get_unit()
-                return unit and unit.relationship_ids.Spouse ~= -1
-            end,
+            on_activate=function() clear_spouse(self:get_unit(), function() self.dirty = 2 end) end,
+            visible=function() return get_spouse_hf(self:get_unit()) end,
         },
         widgets.HotkeyLabel{
             frame={t=5, l=2},
@@ -254,22 +245,18 @@ function RelationshipsPage:init()
             key='CUSTOM_X',
             auto_width=true,
             on_activate=function()
-                set_spouse(self:get_unit(), dfhack.gui.getSelectedUnit(true))
-                self.dirty = 2
+                set_spouse(self:get_unit(), dfhack.gui.getSelectedUnit(true), function() self.dirty = 2 end)
             end,
-            visible=function()
-                local unit = self:get_unit()
-                return not unit or unit.relationship_ids.Spouse == -1
-            end,
+            visible=function() return not get_spouse_hf(self:get_unit()) end,
             enabled=function()
                 local unit = self:get_unit()
                 local selected = dfhack.gui.getSelectedUnit(true)
-                return unit and unit.relationship_ids.Spouse == -1 and can_have_spouse(unit) and
+                return unit and not get_spouse_hf(unit) and can_have_spouse(unit) and
                     selected and selected.race == unit.race and selected.id ~= unit.id
             end,
         },
         widgets.Panel{
-            frame={t=7, b=3},
+            frame={t=7, b=0},
             frame_style=gui.FRAME_INTERIOR,
             subviews={
                 widgets.Label{
@@ -280,7 +267,7 @@ function RelationshipsPage:init()
                     },
                 },
                 widgets.List{
-                    frame={t=2, b=2},
+                    frame={t=2, b=3},
                     view_id='lovers',
                     on_submit=function(_, choice)
                         local hf = df.historical_figure.find(choice.data.hfid)
@@ -288,6 +275,27 @@ function RelationshipsPage:init()
                         local unit = df.unit.find(hf.unit_id)
                         if not unit then return end
                         zoom_to(unit)
+                    end,
+                },
+                widgets.HotkeyLabel{
+                    frame={b=1, l=0},
+                    label='Add selected unit as lover',
+                    key='CUSTOM_L',
+                    auto_width=true,
+                    on_activate=function()
+                        local selected = dfhack.gui.getSelectedUnit(true)
+                        if not selected then return end
+                        local unit = self:get_unit()
+                        if not unit then return end
+                        add_hf_link(df.histfig_hf_link_loverst, unit.hist_figure_id, selected.hist_figure_id)
+                        add_hf_link(df.histfig_hf_link_loverst, selected.hist_figure_id, unit.hist_figure_id)
+                        self.dirty = 1
+                    end,
+                    enabled=function()
+                        local unit = self:get_unit()
+                        local selected = dfhack.gui.getSelectedUnit(true)
+                        return unit and selected and selected.race == unit.race and selected.id ~= unit.id and
+                            not has_spouse_or_lover(unit, selected)
                     end,
                 },
                 widgets.HotkeyLabel{
@@ -310,43 +318,6 @@ function RelationshipsPage:init()
                     end,
                 },
             },
-        },
-        widgets.HotkeyLabel{
-            frame={b=1, l=0},
-            label='Add selected unit as spouse',
-            key='CUSTOM_S',
-            auto_width=true,
-            on_activate=function()
-                set_spouse(self:get_unit(), dfhack.gui.getSelectedUnit(true))
-                self.dirty = 3
-            end,
-            enabled=function()
-                local unit = self:get_unit()
-                local selected = dfhack.gui.getSelectedUnit(true)
-                return unit and selected and selected.race == unit.race and selected.id ~= unit.id and
-                    not has_spouse_or_lover(unit, selected)
-            end,
-        },
-        widgets.HotkeyLabel{
-            frame={b=0, l=0},
-            label='Add selected unit as lover',
-            key='CUSTOM_L',
-            auto_width=true,
-            on_activate=function()
-                local selected = dfhack.gui.getSelectedUnit(true)
-                if not selected then return end
-                local unit = self:get_unit()
-                if not unit then return end
-                add_hf_link(df.histfig_hf_link_loverst, unit.hist_figure_id, selected.hist_figure_id)
-                add_hf_link(df.histfig_hf_link_loverst, selected.hist_figure_id, unit.hist_figure_id)
-                self.dirty = 1
-            end,
-            enabled=function()
-                local unit = self:get_unit()
-                local selected = dfhack.gui.getSelectedUnit(true)
-                return unit and selected and selected.race == unit.race and selected.id ~= unit.id and
-                    not has_spouse_or_lover(unit, selected)
-            end,
         },
     }
 end
@@ -806,11 +777,14 @@ FamilyAffairs.ATTRS {
     frame={w=50, h=30, r=2, t=18},
     frame_inset={t=1, l=1, r=1},
     resizable=true,
+    initial_tab=DEFAULT_NIL,
 }
 
 function FamilyAffairs:init()
-    local function on_show()
-        local _, page = self.subviews.pages:getSelected()
+    local function on_select(idx)
+        local pages = self.subviews.pages
+        pages:setSelected(idx)
+        local _, page = pages:getSelected()
         page:on_show()
     end
 
@@ -821,10 +795,7 @@ function FamilyAffairs:init()
                 'Relationships',
                 'Pregnancy',
             },
-            on_select=function(idx)
-                self.subviews.pages:setSelected(idx)
-                on_show()
-            end,
+            on_select=on_select,
             get_cur_page=function() return self.subviews.pages:getSelected() end,
         },
         widgets.Pages{
@@ -837,7 +808,7 @@ function FamilyAffairs:init()
         },
     }
 
-    on_show()
+    on_select(self.initial_tab == 'pregnancy' and 2 or 1)
 end
 
 ----------------------
@@ -847,14 +818,28 @@ end
 FamilyAffairsScreen = defclass(FamilyAffairsScreen, gui.ZScreen)
 FamilyAffairsScreen.ATTRS {
     focus_path='pregnancy',
+    initial_tab='relationships',
 }
 
 function FamilyAffairsScreen:init()
-    self:addviews{FamilyAffairs{}}
+    self:addviews{FamilyAffairs{initial_tab=self.initial_tab}}
 end
 
 function FamilyAffairsScreen:onDismiss()
     view = nil
 end
 
-view = view and view:raise() or FamilyAffairsScreen{}:show()
+local help, initial_tab = false, 'relationships'
+
+local positionals = argparse.processArgsGetopt({...}, {
+    {'h', 'help', handler=function() help = true end},
+    {nil, 'pregnancy', handler=function() initial_tab = 'pregnancy' end},
+})
+
+if positionals[1] == 'help' then help = true end
+if help then
+    print(dfhack.script_help())
+    return
+end
+
+view = view and view:raise() or FamilyAffairsScreen{initial_tab=initial_tab}:show()
