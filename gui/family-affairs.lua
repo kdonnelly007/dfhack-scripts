@@ -829,6 +829,10 @@ function FamilyAffairsScreen:onDismiss()
     view = nil
 end
 
+if not dfhack.isMapLoaded() then
+    qerror('requires a map to be loaded')
+end
+
 local help, initial_tab = false, 'relationships'
 
 local positionals = argparse.processArgsGetopt({...}, {
