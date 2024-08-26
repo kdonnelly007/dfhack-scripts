@@ -252,7 +252,9 @@ function RelationshipsPage:init()
                 local unit = self:get_unit()
                 local selected = dfhack.gui.getSelectedUnit(true)
                 return unit and not get_spouse_hf(unit) and can_have_spouse(unit) and
-                    selected and selected.race == unit.race and selected.id ~= unit.id
+                    selected and selected.race == unit.race and selected.id ~= unit.id and
+                    (selected.sex == df.pronoun_type.she and unit.sex == df.pronoun_type.he or
+                     selected.sex == df.pronoun_type.he and unit.sex == df.pronoun_type.she)
             end,
         },
         widgets.Panel{
