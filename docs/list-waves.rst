@@ -20,7 +20,7 @@ Usage
 
     list-waves [<wave num> ...] [<options>]
 
-You can show only information about specific waves by specifing the wave
+You can show only information about specific waves by specifying the wave
 numbers on the commandline. Otherwise, all waves are shown. The first migration
 wave that normally arrives in a fort's second season is wave number 1. The
 founding dwarves arrive in wave 0.
