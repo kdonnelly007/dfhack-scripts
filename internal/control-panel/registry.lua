@@ -42,7 +42,7 @@ COMMANDS_BY_IDX = {
         conflicts={'cleanowned-nodump'},
         params={'--time', '1', '--timeUnits', 'months', '--command', '[', 'cleanowned', 'X', ']'}},
     {command='cleanowned-nodump', group='automation', mode='repeat',
-        desc='Encourage dwarves to drop tattered clothing on the floor when there is new available clothing.',
+        desc='Drop tattered clothing, but don\'t mark it for dumping. Pairs well with tailor and tailor confiscate false.',
         conflicts={'cleanowned'},
         params={'--time', '1', '--timeUnits', 'months', '--command', '[', 'cleanowned', 'X', 'nodump', ']'}},
     {command='gui/settings-manager load-standing-orders', group='automation', mode='run',
@@ -59,6 +59,8 @@ COMMANDS_BY_IDX = {
     {command='seedwatch', group='automation', mode='enable'},
     {command='suspendmanager', group='automation', mode='enable'},
     {command='tailor', group='automation', mode='enable'},
+    {command='tailor confiscate false', group='automation', mode='run',
+        desc='Enable if you don\'t want old clothes to be dumped. Pairs well with cleanowned-nodump.'},
 
     -- bugfix tools
     {command='adamantine-cloth-wear', help_command='tweak', group='bugfix', mode='tweak', default=true,
