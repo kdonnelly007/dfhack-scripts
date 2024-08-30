@@ -73,7 +73,7 @@ COMMANDS_BY_IDX = {
         params={'--time', '7', '--timeUnits', 'days', '--command', '[', 'fix/dead-units', '--burrow', '-q', ']'}},
     {command='fix/dry-buckets', group='bugfix', mode='repeat', default=true,
         desc='Allow discarded water buckets to be used again.',
-        params={'--time', '7', '--timeUnits', 'days', '--command', '[', 'fix/dry-buckets', ']'}},
+        params={'--time', '7', '--timeUnits', 'days', '--command', '[', 'fix/dry-buckets', '-q', ']'}},
     {command='fix/empty-wheelbarrows', group='bugfix', mode='repeat', default=true,
         desc='Make abandoned full wheelbarrows usable again.',
         params={'--time', '1', '--timeUnits', 'days', '--command', '[', 'fix/empty-wheelbarrows', '-q', ']'}},
